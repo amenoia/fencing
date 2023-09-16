@@ -1,0 +1,295 @@
+/**
+ * @file /src/main_window.cpp
+ *
+ * @brief Implementation for the qt gui.
+ *
+ * @date February 2011
+ **/
+/*****************************************************************************
+** Includes
+*****************************************************************************/
+#define NONE 0
+#define UP 1
+#define DOWN 2
+#define FRONT 1
+#define BACK 2
+#define LEFT 3
+#define RIGHT 4
+#define L_TURN 5
+#define R_TURN 6
+#define UP_ATTACK 1
+#define DOWN_ATTACK 2
+#define DEFENSE 3
+
+
+#include <QtGui>
+#include <QMessageBox>
+#include <iostream>
+#include "../include/fencing_master/main_window.hpp"
+#include <QKeyEvent>
+
+/*****************************************************************************
+** Namespaces
+*****************************************************************************/
+
+extern ros::Publisher fencing_master_to_Pub;
+msg_generate::fencing_master_to fencing_master_to_Msg;
+extern ros::Publisher motionNum_Pub;
+msg_generate::motionNum_msg motion;
+
+extern ros::Subscriber fencing_ui_to_Sub;
+extern ros::Subscriber fencing_vision_to_Sub;
+extern ros::Subscriber motion_end_Sub;
+msg_generate::motion_end motion_end_Msg;
+extern ros::Subscriber imu_Sub;
+
+namespace fencing_master {
+
+using namespace Qt;
+
+/*****************************************************************************
+** Implementation [MainWindow]
+*****************************************************************************/
+
+bool playMotion(int motion_num);
+
+//subscribe data
+int _moving_mode;
+int _action_mode;
+int _current_moving;
+int _current_action;
+
+int _redx;
+int _redy;
+int _greenx;
+int _greeny;
+int _bluex;
+int _bluey;
+
+//int data
+int location_red;
+int location_green;
+int location_blue;
+int up = 0;
+int down = 0;
+int _target = 0;
+
+//bool data
+bool end_moving = false;
+bool end_action = false;
+
+
+
+MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
+    : QMainWindow(parent)
+    , qnode(argc,argv)
+{
+    ui.setupUi(this); // Calling this incidentally connects all ui's triggers to on_...() callbacks in this class.
+
+    setWindowIcon(QIcon(":/images/icon.png"));
+
+    qnode.init();
+
+    m_Timer = new QTimer(this);
+    connect(m_Timer, SIGNAL(timeout()), this, SLOT(main()));
+    connect(m_Timer, SIGNAL(timeout()), this, SLOT(playMotion()));
+    m_Timer->start(100);
+
+
+
+    QObject::connect(&qnode, SIGNAL(rosShutdown()), this, SLOT(close()));
+}
+
+MainWindow::~MainWindow() {}
+
+/*****************************************************************************
+** Functions
+*****************************************************************************/
+
+void MainWindow::main(){
+
+    bool on_red = false;
+    bool on_green = false;
+    bool on_blue = false;
+
+    up = 0;
+    down = 0;
+    /********************************************************
+                         VISION CALCULATE
+    ********************************************************/
+
+    //target detect
+    if(_redx > 0 && _redx < 640){
+        on_red = true;
+        location_red = 0;
+    }
+
+    if(_greenx > 0 && _greenx < 640){
+        on_green = true;
+        location_green = 0;
+    }
+
+    if(_bluex > 0 && _bluex < 640){
+        on_blue = true;
+        location_blue = 0;
+    }
+
+    if(on_red == true){
+        if(_redy > 0 && _redy < 240){
+            location_red = UP;
+            up++;
+        }
+        else if(_redy > 240 && _redy < 480){
+            location_red = DOWN;
+            down++;
+        }
+    }else{
+        location_red = 0;
+    }
+
+    if(on_green == true){
+        if(_greeny > 0 && _greeny < 240){
+            location_green = UP;
+            up++;
+        }
+        else if(_greeny > 240 && _greeny < 480){
+            location_green = DOWN;
+            down++;
+        }
+    }else{
+        location_green = 0;
+    }
+
+    if(on_blue == true){
+        if(_bluey > 0 && _bluey < 240){
+            location_blue = UP;
+            up++;
+        }
+        else if(_bluey > 240 && _bluey < 480){
+            location_blue = DOWN;
+            down++;
+        }
+    }else{
+        location_blue = 0;
+    }
+
+    /********************************************************
+                        MOTION CALCULATE
+    ********************************************************/
+
+
+    if(_moving_mode == 1){
+        end_moving = playMotion(1);
+        _current_moving = 1;
+        std::cout << "front launch" << std::endl;
+    }else if(_moving_mode == 2){
+        end_moving = playMotion(2);
+        _current_moving = 2;
+        std::cout << "back launch" << std::endl;
+    }else if(_moving_mode == 3){
+        end_moving = playMotion(3);
+        _current_moving = 3;
+        std::cout << "left launch" << std::endl;
+    }else if(_moving_mode == 4){
+        end_moving = playMotion(4);
+        _current_moving = 4;
+        std::cout << "right launch" << std::endl;
+    }else if(_moving_mode == 5){
+        end_moving = playMotion(5);
+        _current_moving = 5;
+        std::cout << "L_turn launch" << std::endl;
+    }else if(_moving_mode == 6){
+        end_moving = playMotion(6);
+        _current_moving = 6;
+        std::cout << "R_turn launch" << std::endl;
+    }
+
+    if(up > down){
+        _target = UP;
+    }else{
+        _target = DOWN;
+    }
+
+    if(up == 0 && down == 0){
+        _target = 0;
+    }
+
+    if(_action_mode == 1){
+        if(up > down){
+            end_action = playMotion(7);
+            std::cout << "upper attack launch" << std::endl;
+        }else{
+            end_action = playMotion(8);
+            std::cout << "down attack launch" << std::endl;
+        }
+    }else if(_action_mode == 2){
+        end_action = playMotion(9);
+        std::cout << "defense launch" << std::endl;
+    }
+    /********************************************************
+                        PUBLISH MESSEAGE
+    ********************************************************/
+
+    if(end_moving == true){
+        end_moving = playMotion(0);
+    }
+
+        fencing_master_to_Msg.location_red = location_red;
+        fencing_master_to_Msg.location_green = location_green;
+        fencing_master_to_Msg.location_blue = location_blue;
+        fencing_master_to_Msg.moving_mode = _moving_mode;
+        fencing_master_to_Msg.action_mode = _action_mode;
+        fencing_master_to_Msg.target = _target;
+        fencing_master_to_Pub.publish(fencing_master_to_Msg);
+
+
+
+
+}
+
+void QNode::ui_callback(const msg_generate::fencing_ui_to::ConstPtr &msg){
+    _moving_mode = msg->moving_mode;
+    _action_mode = msg->action_mode;
+
+}
+
+void QNode::vision_callback(const msg_generate::fencing_vision_to::ConstPtr &msg){
+    _redx = msg->redx;
+    _redy = msg->redy;
+    _greenx = msg->greenx;
+    _greeny = msg->greeny;
+    _bluex = msg->bluex;
+    _bluey = msg->bluey;
+
+}
+
+bool playMotion(int motion_num)
+{
+    std::cout << "playMotion - ";
+    motion.Motion_Mode = 1;
+    motion.Motion_Num = motion_num;
+    motionNum_Pub.publish(motion);
+
+    bool motion_end = false;
+
+    if(motion_end_Msg.motion_end) {
+        motion_end = true;
+    }
+    return motion_end;
+}
+
+void QNode::imu_callback(const msg_generate::imu_msg::ConstPtr &msg){
+    yaw = msg->yaw;
+    pitch = msg->pitch;
+    roll = msg->roll;
+
+}
+
+void QNode::motion_end_callback(const msg_generate::motion_end::ConstPtr &msg){
+    motion_end = msg->motion_end;
+
+}
+
+
+}  // namespace fencing_master
+

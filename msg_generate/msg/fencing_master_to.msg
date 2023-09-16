@@ -1,0 +1,10 @@
+int64 moving_mode
+int64 action_mode
+int64 current_moving
+int64 current_action
+int64 location_red
+int64 location_green
+int64 location_blue
+int64 target
+int64 moving_end
+int64 action_end
