@@ -50,11 +50,14 @@ public Q_SLOTS:
     void on_attack_clicked();
     void on_defense_clicked();
 
-    void KeyPressEvent(QKeyEvent *event);
+    
 
 private:
 	Ui::MainWindowDesign ui;
 	QNode qnode;
+
+protected:
+	void keyPressEvent(QKeyEvent *event);
 };
 
 }  // namespace fencing_ui
