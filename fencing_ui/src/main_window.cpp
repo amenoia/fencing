@@ -8,18 +8,18 @@
 /*****************************************************************************
 ** Includes
 *****************************************************************************/
-//#define NONE 0
-//#define UP 1
-//#define DOWN 2
-//#define FRONT 1
-//#define BACK 2
-//#define LEFT 3
-//#define RIGHT 4
-//#define L_TURN 5
-//#define R_TURN 6
-//#define UP_ATTACK 1
-//#define DOWN_ATTACK 2
-//#define DEFENSE 3
+//#define NONE          0X00
+//#define FRONT         0XO1
+//#define BACK          0X02
+//#define LEFT          0X03
+//#define RIGHT         0X04
+//#define L_TURN        0X05
+//#define R_TURN        0X06
+//#define UP_ATTACK     0X07
+//#define DOWN_ATTACK   0X08
+//#define DEFENSE       0X09
+//#define UP            1
+//define DOWN           2
 
 #include <QtGui>
 #include <QMessageBox>
@@ -205,33 +205,45 @@ void MainWindow::on_defense_clicked(){
     _action_mode = 2;
 }
 
-void MainWindow::KeyPressEvent(QKeyEvent *event){
+void MainWindow::keyPressEvent(QKeyEvent *event){
     QString text;
     switch(event->key()){
     case Qt::Key_W:
-        _moving_mode = 1;
-        std::cout << " 1 " << std::endl;
+        _moving_mode = FRONT;
+        std::cout << " FRONT " << std::endl;
         break;
     case Qt::Key_S:
-        _moving_mode = 2;
-        std::cout << " 2 " << std::endl;
+        _moving_mode = BACK;
+        std::cout << " BACK " << std::endl;
         break;
     case Qt::Key_A:
-        _moving_mode = 3;
-        std::cout << " 3 " << std::endl;
+        _moving_mode = LEFT;
+        std::cout << " LEFT " << std::endl;
         break;
     case Qt::Key_D:
-        _moving_mode = 4;
-        std::cout << " 4 " << std::endl;
+        _moving_mode = RIGHT;
+        std::cout << " RIGHT " << std::endl;
         break;
     case Qt::Key_Q:
-        _moving_mode = 5;
-        std::cout << " 5 " << std::endl;
+        _moving_mode = L_TURN;
+        std::cout << " L_TURN " << std::endl;
         break;
     case Qt::Key_E:
-        _moving_mode = 6;
-        std::cout << " 6 " << std::endl;
+        _moving_mode = R_TURN;
+        std::cout << " R_TURN " << std::endl;
         break;
+    case Qt::Key_J:
+        if(target == UP){
+            _action_mode = UP_ATTACK;  
+            std::cout << "UP_ATTACK" << std::endl;
+            }
+        esle(target == DOWN){
+            _action_mode = DOWN_ATTACK;
+            std::cout << "DOWN_ATTACK" << std::endl;
+        }
+    case Qt::Key_K:
+        _action_mode = DEFENSE;
+        std::cout << "DEFENSE" << std::endl;
     default:
         std::cout << " X " << std::endl;
     }
