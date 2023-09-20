@@ -8,18 +8,20 @@
 /*****************************************************************************
 ** Includes
 *****************************************************************************/
-#define NONE 0
-#define UP 1
-#define DOWN 2
-#define FRONT 1
-#define BACK 2
-#define LEFT 3
-#define RIGHT 4
-#define L_TURN 5
-#define R_TURN 6
-#define UP_ATTACK 1
-#define DOWN_ATTACK 2
-#define DEFENSE 3
+#define NONE          0X00
+#define FRONT         0XO1
+#define BACK          0X02
+#define LEFT          0X03
+#define RIGHT         0X04
+#define L_TURN        0X05
+#define R_TURN        0X06
+#define UP_ATTACK     0X07
+#define DOWN_ATTACK   0X08
+#define BOTH_L        0X09
+#define BOTH_R        0X10
+#define DEFENSE       0X11
+#define UP            1
+#define DOWN           2
 
 
 #include <QtGui>
@@ -73,6 +75,9 @@ int location_blue;
 int up = 0;
 int down = 0;
 int _target = 0;
+int left = 0
+int right = 0;
+int _LR = 0;
 
 //bool data
 bool end_moving = false;
@@ -173,41 +178,64 @@ void MainWindow::main(){
         location_blue = 0;
     }
 
+    if(location_red = DOWN){
+        if(_redx > 0 && _redx < 320)
+            left++
+        else
+            right++;
+    }
+
+        if(location_green = DOWN){
+        if(_greenx > 0 && _greenx < 320)
+            left++
+        else
+            right++;
+    }
+
+        if(location_blue = DOWN){
+        if(_bluex > 0 && _bluex < 320)
+            left++
+        else
+            right++;
+    }
+
     /********************************************************
                         MOTION CALCULATE
     ********************************************************/
 
 
-    if(_moving_mode == 1){
-        end_moving = playMotion(1);
+    if(_moving_mode == FRONT){
+        end_moving = playMotion(FRONT);
         _current_moving = 1;
         std::cout << "front launch" << std::endl;
-    }else if(_moving_mode == 2){
-        end_moving = playMotion(2);
+    }else if(_moving_mode == BACK){
+        end_moving = playMotion(BACK);
         _current_moving = 2;
         std::cout << "back launch" << std::endl;
-    }else if(_moving_mode == 3){
-        end_moving = playMotion(3);
+    }else if(_moving_mode == LEFT){
+        end_moving = playMotion(LEFT);
         _current_moving = 3;
         std::cout << "left launch" << std::endl;
-    }else if(_moving_mode == 4){
-        end_moving = playMotion(4);
+    }else if(_moving_mode == RIGHT){
+        end_moving = playMotion(RIGHT);
         _current_moving = 4;
         std::cout << "right launch" << std::endl;
-    }else if(_moving_mode == 5){
-        end_moving = playMotion(5);
+    }else if(_moving_mode == L_TURN){
+        end_moving = playMotion(L_TURN);
         _current_moving = 5;
         std::cout << "L_turn launch" << std::endl;
-    }else if(_moving_mode == 6){
-        end_moving = playMotion(6);
+    }else if(_moving_mode == R_TURN){
+        end_moving = playMotion(R_TURN);
         _current_moving = 6;
         std::cout << "R_turn launch" << std::endl;
     }
 
     if(up > down){
         _target = UP;
-    }else{
+    }else if(up < down){
         _target = DOWN;
+    }else if(up == down{
+        _target = BOTH;    
     }
 
     if(up == 0 && down == 0){
@@ -216,14 +244,21 @@ void MainWindow::main(){
 
     if(_action_mode == 1){
         if(up > down){
-            end_action = playMotion(7);
+            end_action = playMotion(UP_ATTACK);
             std::cout << "upper attack launch" << std::endl;
-        }else{
-            end_action = playMotion(8);
+        }else if(up < down){
+            end_action = playMotion(DOWN_ATTACK);
             std::cout << "down attack launch" << std::endl;
+        }else{
+            if(right > left)
+                end_action = playMotion(BOTH_R);
+            else
+                end_action = playMotion(BOTH_L);
+            
+            std::cout << "both attack launch" << std::endl;
         }
     }else if(_action_mode == 2){
-        end_action = playMotion(9);
+        end_action = playMotion(DEFENSE);
         std::cout << "defense launch" << std::endl;
     }
     /********************************************************
