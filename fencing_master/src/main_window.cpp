@@ -8,20 +8,19 @@
 /*****************************************************************************
 ** Includes
 *****************************************************************************/
-#define NONE          0X00
-#define FRONT         0XO1
-#define BACK          0X02
-#define LEFT          0X03
-#define RIGHT         0X04
-#define L_TURN        0X05
-#define R_TURN        0X06
-#define UP_ATTACK     0X07
-#define DOWN_ATTACK   0X08
-#define BOTH_L        0X09
-#define BOTH_R        0X10
-#define DEFENSE       0X11
-#define UP            1
-#define DOWN           2
+#define NONE        0X00
+#define UP          0X01
+#define DOWN        0X02
+#define FRONT       0X03
+#define BACK        0X04
+#define LEFT        0X05
+#define RIGHT       0X06
+#define L_TURN      0X07
+#define R_TURN      0X08
+#define UP_ATTACK   0X09
+#define DOWN_ATTACK 0X0A
+#define DEFENSE     0X0B
+#define WAKE        0X0CE
 
 
 #include <QtGui>
@@ -75,9 +74,6 @@ int location_blue;
 int up = 0;
 int down = 0;
 int _target = 0;
-int left = 0
-int right = 0;
-int _LR = 0;
 
 //bool data
 bool end_moving = false;
@@ -178,64 +174,45 @@ void MainWindow::main(){
         location_blue = 0;
     }
 
-    if(location_red = DOWN){
-        if(_redx > 0 && _redx < 320)
-            left++
-        else
-            right++;
-    }
-
-        if(location_green = DOWN){
-        if(_greenx > 0 && _greenx < 320)
-            left++
-        else
-            right++;
-    }
-
-        if(location_blue = DOWN){
-        if(_bluex > 0 && _bluex < 320)
-            left++
-        else
-            right++;
-    }
-
     /********************************************************
                         MOTION CALCULATE
     ********************************************************/
 
 
-    if(_moving_mode == FRONT){
+    if(_moving_mode == 1){
         end_moving = playMotion(FRONT);
         _current_moving = 1;
         std::cout << "front launch" << std::endl;
-    }else if(_moving_mode == BACK){
+    }else if(_moving_mode == 2){
         end_moving = playMotion(BACK);
         _current_moving = 2;
         std::cout << "back launch" << std::endl;
-    }else if(_moving_mode == LEFT){
+    }else if(_moving_mode == 3){
         end_moving = playMotion(LEFT);
         _current_moving = 3;
         std::cout << "left launch" << std::endl;
-    }else if(_moving_mode == RIGHT){
+    }else if(_moving_mode == 4){
         end_moving = playMotion(RIGHT);
         _current_moving = 4;
         std::cout << "right launch" << std::endl;
-    }else if(_moving_mode == L_TURN){
+    }else if(_moving_mode == 5){
         end_moving = playMotion(L_TURN);
         _current_moving = 5;
         std::cout << "L_turn launch" << std::endl;
-    }else if(_moving_mode == R_TURN){
+    }else if(_moving_mode == 6){
         end_moving = playMotion(R_TURN);
         _current_moving = 6;
         std::cout << "R_turn launch" << std::endl;
+    }else if(_moving_mode == 7){
+        end_moving = playMotion(WAKE);
+        _current_moving = 7;
+        std::cout << "WAKE launch" << std::endl;
     }
 
     if(up > down){
         _target = UP;
-    }else if(up < down){
+    }else{
         _target = DOWN;
-    }else if(up == down{
-        _target = BOTH;    
     }
 
     if(up == 0 && down == 0){
@@ -246,16 +223,9 @@ void MainWindow::main(){
         if(up > down){
             end_action = playMotion(UP_ATTACK);
             std::cout << "upper attack launch" << std::endl;
-        }else if(up < down){
+        }else{
             end_action = playMotion(DOWN_ATTACK);
             std::cout << "down attack launch" << std::endl;
-        }else{
-            if(right > left)
-                end_action = playMotion(BOTH_R);
-            else
-                end_action = playMotion(BOTH_L);
-            
-            std::cout << "both attack launch" << std::endl;
         }
     }else if(_action_mode == 2){
         end_action = playMotion(DEFENSE);
@@ -300,7 +270,7 @@ void QNode::vision_callback(const msg_generate::fencing_vision_to::ConstPtr &msg
 
 bool playMotion(int motion_num)
 {
-    std::cout << "playMotion - ";
+    std::cout << "playMotion - "  << motion_num << " ";
     motion.Motion_Mode = 1;
     motion.Motion_Num = motion_num;
     motionNum_Pub.publish(motion);
